@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/asim/go-micro/v3/config/reader"
+	"github.com/asim/go-micro/v3/config/source"
 	simple "github.com/bitly/go-simplejson"
-	"github.com/micro/go-micro/config/reader"
-	"github.com/micro/go-micro/config/source"
 )
 
 type jsonValues struct {
@@ -21,20 +21,18 @@ type jsonValue struct {
 	*simple.Json
 }
 
-func newValues(ch *source.ChangeSet) (reader.Values, error) {
+func newValues(ch *source.ChangeSet, opts reader.Options) (reader.Values, error) {
 	sj := simple.New()
-	data, _ := reader.ReplaceEnvVars(ch.Data)
+	data := ch.Data
+
+	if !opts.DisableReplaceEnvVars {
+		data, _ = reader.ReplaceEnvVars(ch.Data)
+	}
+
 	if err := sj.UnmarshalJSON(data); err != nil {
 		sj.SetPath(nil, string(ch.Data))
 	}
 	return &jsonValues{ch, sj}, nil
-}
-
-func newValue(s *simple.Json) reader.Value {
-	if s == nil {
-		s = simple.New()
-	}
-	return &jsonValue{s}
 }
 
 func (j *jsonValues) Get(path ...string) reader.Value {

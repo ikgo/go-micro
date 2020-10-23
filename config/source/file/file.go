@@ -5,11 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/micro/go-micro/config/source"
+	"github.com/asim/go-micro/v3/config/source"
 )
 
 type file struct {
 	path string
+	data []byte
 	opts source.Options
 }
 
@@ -52,6 +53,10 @@ func (f *file) Watch() (source.Watcher, error) {
 		return nil, err
 	}
 	return newWatcher(f)
+}
+
+func (f *file) Write(cs *source.ChangeSet) error {
+	return nil
 }
 
 func NewSource(opts ...source.Option) source.Source {

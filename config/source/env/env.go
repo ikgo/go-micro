@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/asim/go-micro/v3/config/source"
 	"github.com/imdario/mergo"
-	"github.com/micro/go-micro/config/source"
 )
 
 var (
@@ -103,6 +103,10 @@ func reverse(ss []string) {
 
 func (e *env) Watch() (source.Watcher, error) {
 	return newWatcher()
+}
+
+func (e *env) Write(cs *source.ChangeSet) error {
+	return nil
 }
 
 func (e *env) String() string {

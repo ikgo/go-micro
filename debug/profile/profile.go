@@ -6,6 +6,26 @@ type Profile interface {
 	Start() error
 	// Stop the profiler
 	Stop() error
+	// Name of the profiler
+	String() string
+}
+
+var (
+	DefaultProfile Profile = new(noop)
+)
+
+type noop struct{}
+
+func (p *noop) Start() error {
+	return nil
+}
+
+func (p *noop) Stop() error {
+	return nil
+}
+
+func (p *noop) String() string {
+	return "noop"
 }
 
 type Options struct {

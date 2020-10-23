@@ -8,12 +8,11 @@ import (
 	"net/http"
 )
 
-// Error implements the error interface.
 type Error struct {
-	Id     string `json:"id"`
-	Code   int32  `json:"code"`
-	Detail string `json:"detail"`
-	Status string `json:"status"`
+	Id     string
+	Code   int32
+	Detail string
+	Status string
 }
 
 func (e *Error) Error() string {
@@ -46,9 +45,9 @@ func Parse(err string) *Error {
 func BadRequest(id, format string, a ...interface{}) error {
 	return &Error{
 		Id:     id,
-		Code:   400,
+		Code:   http.StatusBadRequest,
 		Detail: fmt.Sprintf(format, a...),
-		Status: http.StatusText(400),
+		Status: http.StatusText(http.StatusBadRequest),
 	}
 }
 
@@ -56,9 +55,9 @@ func BadRequest(id, format string, a ...interface{}) error {
 func Unauthorized(id, format string, a ...interface{}) error {
 	return &Error{
 		Id:     id,
-		Code:   401,
+		Code:   http.StatusUnauthorized,
 		Detail: fmt.Sprintf(format, a...),
-		Status: http.StatusText(401),
+		Status: http.StatusText(http.StatusUnauthorized),
 	}
 }
 
@@ -66,9 +65,9 @@ func Unauthorized(id, format string, a ...interface{}) error {
 func Forbidden(id, format string, a ...interface{}) error {
 	return &Error{
 		Id:     id,
-		Code:   403,
+		Code:   http.StatusForbidden,
 		Detail: fmt.Sprintf(format, a...),
-		Status: http.StatusText(403),
+		Status: http.StatusText(http.StatusForbidden),
 	}
 }
 
@@ -76,9 +75,9 @@ func Forbidden(id, format string, a ...interface{}) error {
 func NotFound(id, format string, a ...interface{}) error {
 	return &Error{
 		Id:     id,
-		Code:   404,
+		Code:   http.StatusNotFound,
 		Detail: fmt.Sprintf(format, a...),
-		Status: http.StatusText(404),
+		Status: http.StatusText(http.StatusNotFound),
 	}
 }
 
@@ -86,9 +85,9 @@ func NotFound(id, format string, a ...interface{}) error {
 func MethodNotAllowed(id, format string, a ...interface{}) error {
 	return &Error{
 		Id:     id,
-		Code:   405,
+		Code:   http.StatusMethodNotAllowed,
 		Detail: fmt.Sprintf(format, a...),
-		Status: http.StatusText(405),
+		Status: http.StatusText(http.StatusMethodNotAllowed),
 	}
 }
 
@@ -96,9 +95,9 @@ func MethodNotAllowed(id, format string, a ...interface{}) error {
 func Timeout(id, format string, a ...interface{}) error {
 	return &Error{
 		Id:     id,
-		Code:   408,
+		Code:   http.StatusRequestTimeout,
 		Detail: fmt.Sprintf(format, a...),
-		Status: http.StatusText(408),
+		Status: http.StatusText(http.StatusRequestTimeout),
 	}
 }
 
@@ -106,9 +105,9 @@ func Timeout(id, format string, a ...interface{}) error {
 func Conflict(id, format string, a ...interface{}) error {
 	return &Error{
 		Id:     id,
-		Code:   409,
+		Code:   http.StatusConflict,
 		Detail: fmt.Sprintf(format, a...),
-		Status: http.StatusText(409),
+		Status: http.StatusText(http.StatusConflict),
 	}
 }
 
@@ -116,8 +115,86 @@ func Conflict(id, format string, a ...interface{}) error {
 func InternalServerError(id, format string, a ...interface{}) error {
 	return &Error{
 		Id:     id,
-		Code:   500,
+		Code:   http.StatusInternalServerError,
 		Detail: fmt.Sprintf(format, a...),
-		Status: http.StatusText(500),
+		Status: http.StatusText(http.StatusInternalServerError),
 	}
+}
+
+// NotImplemented generates a 501 error
+func NotImplemented(id, format string, a ...interface{}) error {
+	return &Error{
+		Id:     id,
+		Code:   501,
+		Detail: fmt.Sprintf(format, a...),
+		Status: http.StatusText(501),
+	}
+}
+
+// BadGateway generates a 502 error
+func BadGateway(id, format string, a ...interface{}) error {
+	return &Error{
+		Id:     id,
+		Code:   502,
+		Detail: fmt.Sprintf(format, a...),
+		Status: http.StatusText(502),
+	}
+}
+
+// ServiceUnavailable generates a 503 error
+func ServiceUnavailable(id, format string, a ...interface{}) error {
+	return &Error{
+		Id:     id,
+		Code:   503,
+		Detail: fmt.Sprintf(format, a...),
+		Status: http.StatusText(503),
+	}
+}
+
+// GatewayTimeout generates a 504 error
+func GatewayTimeout(id, format string, a ...interface{}) error {
+	return &Error{
+		Id:     id,
+		Code:   504,
+		Detail: fmt.Sprintf(format, a...),
+		Status: http.StatusText(504),
+	}
+}
+
+// Equal tries to compare errors
+func Equal(err1 error, err2 error) bool {
+	verr1, ok1 := err1.(*Error)
+	verr2, ok2 := err2.(*Error)
+
+	if ok1 != ok2 {
+		return false
+	}
+
+	if !ok1 {
+		return err1 == err2
+	}
+
+	if verr1.Code != verr2.Code {
+		return false
+	}
+
+	return true
+}
+
+// FromError try to convert go error to *Error
+func FromError(err error) *Error {
+	if verr, ok := err.(*Error); ok && verr != nil {
+		return verr
+	}
+
+	return Parse(err.Error())
+}
+
+// Wrap wraps errors
+func Wrap(err error, msg string) error {
+	return fmt.Errorf(`%s: %s"`, msg, err.Error())
+}
+
+func Wrapf(err error, format string, args ...interface{}) error {
+	return Wrap(err, fmt.Sprintf(format, args...))
 }
